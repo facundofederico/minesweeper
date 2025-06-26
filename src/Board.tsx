@@ -3,8 +3,8 @@ import Square from "./Square";
 
 const bombEmoji = "💣";
 const explosionEmoji = "💥";
-const rows = 3;
-const cols = 3;
+const rows = 10;
+const cols = 14;
 const bombs = Math.ceil(rows*cols*0.15);
 
 export default function Board() {
