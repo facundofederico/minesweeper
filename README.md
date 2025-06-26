@@ -1,0 +1,1 @@
+After completing React's tic-tac-toe tutorial, I used what I learned to create a simple Minesweeper game
