@@ -1,17 +1,35 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Square, { SquareState } from "./Square";
 import getUniqueRandomNumbers from "../utils/algorithms";
+import { directions, getIndex, getRowCol } from "../utils/coordinates";
 
 const bombEmoji = "💣";
 const explosionEmoji = "💥";
-const nRows = 15;
-const nColumns = 10;
-const nSquares = nRows*nColumns;
-const nBombs = Math.ceil(nSquares*0.15);
 
-export default function Board() {
-    const [squareStates, setSquareStates] = useState(Array(nSquares).fill(SquareState.Hidden));
-    const [squareContents, setSquareContents] = useState(populateSquares());
+
+export interface BoardDimensions {
+    nRows: number;
+    nColumns: number;
+}
+
+interface BoardProps {
+    dimensions: BoardDimensions;
+    bombRatio: number;
+}
+
+export default function Board({dimensions, bombRatio}: BoardProps) {
+    const nRows = dimensions.nRows;
+    const nColumns = dimensions.nColumns;
+    const nSquares = nRows*nColumns;
+    const nBombs = Math.ceil(nSquares*bombRatio);
+
+    const [squareStates, setSquareStates] = useState(Array(nSquares));
+    const [squareContents, setSquareContents] = useState(Array(nSquares));
+
+    useEffect(() => {
+        setSquareStates(Array(nSquares).fill(SquareState.Hidden));
+        setSquareContents(populateSquares(nRows, nColumns, nBombs))
+    }, [nRows, nColumns, nSquares, nBombs]);
 
     function handleClick(index: number){
         if (squareStates[index] != SquareState.Hidden)
@@ -28,7 +46,7 @@ export default function Board() {
         
         const newSquareStates = squareStates.slice();
         if (squareContents[index] === ""){
-            const emptySquares = findConnectedEmpty(squareContents, index);
+            const emptySquares = findConnectedEmpty(squareContents, index, nColumns, nRows);
             emptySquares.forEach(emptySquareIndex => newSquareStates[emptySquareIndex] = SquareState.Revealed);
         }
         else {
@@ -54,7 +72,7 @@ export default function Board() {
         {Array.from({ length: nRows }, (_, row) => (
             <div className="board-row" key={row}>
                 {Array.from({ length: nColumns }, (_, col) => {
-                    const index = getIndex(col, row);
+                    const index = getIndex(col, row, nColumns);
                     return (
                         <Square
                             key={index}
@@ -71,8 +89,8 @@ export default function Board() {
     </>
 }
 
-function populateSquares(): Array<string>{
-    const squares = Array<string>(nSquares).fill("");
+function populateSquares(nRows: number, nColumns: number, nBombs: number): Array<string>{
+    const squares = Array<string>(nRows*nColumns).fill("");
     const bombIndexes = getUniqueRandomNumbers(nBombs, 0, squares.length-1);
 
     bombIndexes.forEach(index => squares[index] = bombEmoji);
@@ -80,30 +98,22 @@ function populateSquares(): Array<string>{
     squares.forEach((square, index) => {
         if (square === bombEmoji) return;
 
-        squares[index] = getNumberOfSurroundingBombs(squares, index);
+        squares[index] = getNumberOfSurroundingBombs(squares, index, nRows, nColumns);
     });
 
     return squares;
 }
 
-function getIndex(column: number, row: number) : number {
-    return row * nColumns + column;
-}
-function getRowCol(index: number): [number, number] {
-    return [Math.floor(index / nColumns), index % nColumns];
-}
-
-function getNumberOfSurroundingBombs(squares: string[], index: number): string {
+function getNumberOfSurroundingBombs(squares: string[], index: number, nRows: number, nColumns: number): string {
     let result = 0;
-    const row = Math.floor(index / nColumns);
-    const col = index % nColumns;
+    const [row, col] = getRowCol(index, nColumns);
 
     for (const [dr, dc] of directions) {
         const newRow = row + dr;
         const newCol = col + dc;
 
         if (newRow >= 0 && newRow < nRows && newCol >= 0 && newCol < nColumns) {
-            if (squares[getIndex(newCol, newRow)] === bombEmoji)
+            if (squares[getIndex(newCol, newRow, nColumns)] === bombEmoji)
                 result++;
         }
     }
@@ -111,7 +121,7 @@ function getNumberOfSurroundingBombs(squares: string[], index: number): string {
     return result === 0 ? "" : result.toString();
 }
 
-function findConnectedEmpty(matrix: string[], startIndex: number): number[] {
+function findConnectedEmpty(squares: string[], startIndex: number, nColumns: number, nRows: number): number[] {
   const visited = new Set<number>();
   const result: number[] = [];
 
@@ -120,20 +130,20 @@ function findConnectedEmpty(matrix: string[], startIndex: number): number[] {
 
     visited.add(index);
 
-    if (matrix[index] === bombEmoji) return;
+    if (squares[index] === bombEmoji) return;
 
     result.push(index);
 
-    if (matrix[index] != "") return;
+    if (squares[index] != "") return;
 
-    const [row, col] = getRowCol(index);
+    const [row, col] = getRowCol(index, nColumns);
 
     for (const [dr, dc] of directions) {
       const newRow = row + dr;
       const newCol = col + dc;
 
       if (newRow >= 0 && newRow < nRows && newCol >= 0 && newCol < nColumns) {
-        const newIndex = getIndex(newCol, newRow);
+        const newIndex = getIndex(newCol, newRow, nColumns);
         dfs(newIndex);
       }
     }
@@ -142,17 +152,6 @@ function findConnectedEmpty(matrix: string[], startIndex: number): number[] {
   dfs(startIndex);
   return result;
 }
-
-const directions = [
-    [-1,  0], // Up
-    [ 1,  0], // Down
-    [ 0, -1], // Left
-    [ 0,  1], // Right
-    [-1, -1], // Up-Left
-    [-1,  1], // Up-Right
-    [ 1, -1], // Down-Left
-    [ 1,  1], // Down-Right
-];
 
 function isWinningCondition(squareStates: string[], squareContents: string[]): boolean {
     return squareStates.every((state, index) => state != SquareState.Hidden || squareContents[index] === bombEmoji);

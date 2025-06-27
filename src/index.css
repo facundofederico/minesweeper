@@ -26,9 +26,23 @@ h1 {
   line-height: 1.1;
 }
 
-button {
-  background: #fff;
-  border: 1px solid #999;
+.game-configuration {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
+
+.game-configuration button {
+  background: #3e63dd;
+  font-size: 14px;
+  font-weight: bold;
+  text-align: center;
+  border: 0px;
+}
+
+.board-row button {
+  background: #f0f0f0;
+  border: 1px solid #888888;
   float: left;
   font-size: 24px;
   font-weight: bold;
@@ -42,14 +56,8 @@ button {
 }
 
 .hidden {
-  background: #6e6e6e;
+  background: #333333 !important;
 }
 .hidden:hover {
-  background: #adadad;
+  background: #888888 !important;
 }
-
-/* .board-row:after {
-  clear: both;
-  content: '';
-  display: table;
-} */
