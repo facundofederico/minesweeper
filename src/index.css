@@ -26,13 +26,13 @@ h1 {
   line-height: 1.1;
 }
 
-.game-configuration {
+.configuration {
   display: flex;
   gap: 1rem;
   align-items: center;
 }
 
-.game-configuration button {
+.configuration button {
   background: #3e63dd;
   font-size: 14px;
   font-weight: bold;
@@ -43,7 +43,6 @@ h1 {
 .board-row button {
   background: #f0f0f0;
   border: 1px solid #888888;
-  float: left;
   font-size: 24px;
   font-weight: bold;
   line-height: 34px;

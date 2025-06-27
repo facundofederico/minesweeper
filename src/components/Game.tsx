@@ -19,7 +19,7 @@ export default function Game(){
     const [difficulty, setDifficulty] = useState<number>(Difficulty.Medium);
 
     return (<>
-        <div className="game-configuration">
+        <div className="configuration">
             <p>Board Size</p>
             <button onClick={() => setBoardSize(BoardSize.Small)}>Small</button>
             <button onClick={() => setBoardSize(BoardSize.Medium)}>Medium</button>

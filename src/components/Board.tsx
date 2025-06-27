@@ -6,7 +6,6 @@ import { directions, getIndex, getRowCol } from "../utils/coordinates";
 const bombEmoji = "💣";
 const explosionEmoji = "💥";
 
-
 export interface BoardDimensions {
     nRows: number;
     nColumns: number;
@@ -22,6 +21,11 @@ export default function Board({dimensions, bombRatio}: BoardProps) {
     const nColumns = dimensions.nColumns;
     const nSquares = nRows*nColumns;
     const nBombs = Math.ceil(nSquares*bombRatio);
+    const boardRowStyle = {
+        display: 'grid',
+        gridTemplateColumns: `repeat(${nColumns}, 34px)`,
+        gap: '0px',
+    };
 
     const [squareStates, setSquareStates] = useState(Array(nSquares));
     const [squareContents, setSquareContents] = useState(Array(nSquares));
@@ -70,7 +74,7 @@ export default function Board({dimensions, bombRatio}: BoardProps) {
 
     return <>
         {Array.from({ length: nRows }, (_, row) => (
-            <div className="board-row" key={row}>
+            <div style={boardRowStyle} className="board-row" key={row}>
                 {Array.from({ length: nColumns }, (_, col) => {
                     const index = getIndex(col, row, nColumns);
                     return (
