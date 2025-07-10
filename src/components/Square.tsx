@@ -1,10 +1,7 @@
-export const SquareState = {
-    Hidden: "hidden",
-    Secured: "secured",
-    Revealed : "revealed",
-} as const;
+import { SquareState } from "../models/squareState";
+import { flagEmoji } from "../utils/emojis";
 
-interface SquareProps {
+interface Props {
     id: string;
     state: string;
     content: string;
@@ -12,7 +9,7 @@ interface SquareProps {
     handleRightClick: () => void;
 }
 
-export default function Square({id, state, content, handleClick, handleRightClick}: SquareProps) {
+export default function Square({id, state, content, handleClick, handleRightClick}: Props) {
     const handleContextMenu = (e: React.MouseEvent) => {
         e.preventDefault();
         handleRightClick();
@@ -21,7 +18,7 @@ export default function Square({id, state, content, handleClick, handleRightClic
         switch(state){
             case SquareState.Hidden: return null;
             case SquareState.Revealed: return content;
-            case SquareState.Secured: return "🚩";
+            case SquareState.Secured: return flagEmoji;
         }
     };
 
