@@ -1,5 +1,5 @@
 import Board from "./Board";
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState, type RefObject } from 'react';
 import getUniqueRandomNumbers from "../utils/algorithms";
 import { bombEmoji, explosionEmoji } from "../utils/emojis";
 import { directions, getIndex, getRowCol } from "../utils/coordinates";
@@ -9,12 +9,17 @@ import type { BoardDimensions } from "../models/boardDimensions";
 import { SquareState } from "../models/squareState";
 import BoardSizeButton from "./BoardSizeButton";
 import DifficultyButton from "./DifficultyButton";
+import CloseButton from "./CloseButton";
+import Clock from "./Clock";
 
 export default function Game(){
     const [boardSize, setBoardSize] = useState<BoardDimensions>(BoardSize.Medium);
     const [difficulty, setDifficulty] = useState<Difficulty>(Difficulty.Medium);
     const [squareContents, setSquareContents] = useState(populateSquares(boardSize.nRows, boardSize.nColumns, difficulty));
     const [squareStates, setSquareStates] = useState(Array(boardSize.nRows*boardSize.nColumns));
+    const [clockIsRunning, setClockIsRunning] = useState(false);
+    const [resetClockTrigger, setResetClockTrigger] = useState(false);
+    const durationInSeconds = 240;
     
     useEffect(() => {
         loadNewGame(boardSize.nRows, boardSize.nColumns, difficulty);
@@ -23,11 +28,16 @@ export default function Game(){
     function loadNewGame(nRows: number, nColumns: number, difficulty: Difficulty){
         setSquareContents(populateSquares(nRows, nColumns, difficulty));
         setSquareStates(Array(nRows*nColumns).fill(SquareState.Hidden));
+        setClockIsRunning(false);
+        setResetClockTrigger(prev => !prev);
     }
 
     function handleClick(index: number){
         if (squareStates[index] != SquareState.Hidden)
             return;
+        
+        if (!clockIsRunning)
+            setClockIsRunning(true);
         
         if (squareContents[index] === bombEmoji){
             const newSquareContents = squareContents.slice();
@@ -35,6 +45,8 @@ export default function Game(){
 
             setSquareContents(newSquareContents);
             setSquareStates(squareStates.slice().fill(SquareState.Revealed));
+
+            handleLosing();
             return;
         }
         
@@ -49,7 +61,18 @@ export default function Game(){
         setSquareStates(newSquareStates);
         
         if (isWinningCondition(newSquareStates, squareContents))
-            setSquareStates(squareStates.slice().fill(SquareState.Revealed));
+            handleWinning();
+    }
+
+    function handleWinning(){
+        setSquareStates(squareStates.slice().fill(SquareState.Revealed));
+        setClockIsRunning(false);
+        toggleDialog(winningDialogRef);
+    }
+
+    function handleLosing(){
+        setClockIsRunning(false);
+        toggleDialog(losingDialogRef);
     }
 
     function handleRightClick(index: number){
@@ -62,9 +85,11 @@ export default function Game(){
         setSquareStates(newSquareStates);
     }
 
-    const dialogRef = useRef<HTMLDialogElement>(null);
+    const optionsDialogRef = useRef<HTMLDialogElement>(null);
+    const winningDialogRef = useRef<HTMLDialogElement>(null);
+    const losingDialogRef = useRef<HTMLDialogElement>(null);
 
-    function toggleDialog(){
+    function toggleDialog(dialogRef: RefObject<HTMLDialogElement|null>){
         if (!dialogRef.current)
             return;
 
@@ -75,19 +100,27 @@ export default function Game(){
         }
     }
 
+    function handleTimeout(){
+        setSquareContents(prev => prev.map(x => x === bombEmoji ? explosionEmoji : x));
+        setSquareStates(Array(boardSize.nRows*boardSize.nColumns).fill(SquareState.Revealed));
+        handleLosing();
+    }
+
     return (<>
         <div className="toolbar">
             <button onClick={() => loadNewGame(boardSize.nRows, boardSize.nColumns, difficulty)}>New Game</button>
-            <button onClick={toggleDialog}>Options</button>
+            <Clock duration={durationInSeconds} isRunning={clockIsRunning} resetTrigger={resetClockTrigger} handleTimeout={useCallback(handleTimeout, [])}></Clock>
+            <button onClick={() => toggleDialog(optionsDialogRef)}>Options</button>
         </div>
         
         <Board dimensions={boardSize} squareContents={squareContents} squareStates={squareStates} handleClick={handleClick} handleRightClick={handleRightClick}/>
 
-        <dialog ref={dialogRef} className="options">
-            <button className="close" onClick={toggleDialog}>X</button>
+        <dialog ref={optionsDialogRef} className="options">
+            <CloseButton handleClick={() => toggleDialog(optionsDialogRef)}></CloseButton>
             <p>Board Size</p>
             {Array.from(Object.entries(BoardSize), ([,size]) => 
                 <BoardSizeButton
+                    key={'boardSizeButton_'+size.nColumns}
                     value={size}
                     currentSize={boardSize}
                     handleClick={setBoardSize}
@@ -96,11 +129,24 @@ export default function Game(){
             <p>Difficulty</p>
             {Array.from(Object.entries(Difficulty), ([,diff]) => 
                 <DifficultyButton
+                    key={'boardSizeButton_'+diff}
                     value={diff}
                     currentDifficulty={difficulty}
                     handleClick={setDifficulty}
                 ></DifficultyButton>
             )}
+        </dialog>
+
+        <dialog ref={winningDialogRef} className="options">
+            <CloseButton handleClick={() => toggleDialog(winningDialogRef)}></CloseButton>
+            <br></br>
+            <p>🎉 Congratulations! You won! 🎉</p>
+        </dialog>
+
+        <dialog ref={losingDialogRef} className="options">
+            <CloseButton handleClick={() => toggleDialog(losingDialogRef)}></CloseButton>
+            <br></br>
+            <p>💀 You lost! Try again! 💀</p>
         </dialog>
     </>);
 }

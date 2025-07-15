@@ -25,7 +25,7 @@ export default function Square({id, state, content, handleClick, handleRightClic
     return (
         <button 
             id={id} 
-            className={state != SquareState.Revealed ? "hidden" : ""} 
+            className={state != SquareState.Revealed ? "" : "revealed"} 
             onClick={handleClick} 
             onContextMenu={handleContextMenu}
         >{textToShow()}</button>

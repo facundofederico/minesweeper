@@ -25,13 +25,11 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  margin-bottom: 5px;
 }
-.toolbar button:hover{
-  background: #888888 !important;
-}
-.selected{
-  background: #888888;
-  /* color: #242424; */
+.clock{
+  font-size: 24px;
+  margin: 0;
 }
 
 .options{
@@ -44,6 +42,10 @@ body {
 .options p{
   margin-bottom: 0px;
 }
+.selected{
+  background: #888888;
+  /* color: #242424; */
+}
 .close{
   font-size: 24px;
   line-height: 30px;
@@ -51,9 +53,6 @@ body {
   text-align: center;
   width: 30px;
   float: right;
-}
-.close:hover{
-  background: #888888 !important;
 }
 
 .configuration {
@@ -68,11 +67,9 @@ button {
   text-align: center;
   border: 1px solid #888888;
   color: #f0f0f0;
-  margin-bottom: 5px;
 }
 
 .board-row button {
-  background: #f0f0f0;
   border: 1px solid #888888;
   color: #242424;
   font-size: 24px;
@@ -85,9 +82,10 @@ button {
   width: 34px;
 }
 
-.hidden {
-  background: #333333 !important;
+.revealed {
+  background: #f0f0f0 !important;
 }
-.hidden:hover {
+
+button:hover:not(.revealed) {
   background: #888888 !important;
 }

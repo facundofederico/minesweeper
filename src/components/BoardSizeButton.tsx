@@ -8,7 +8,7 @@ interface Props {
 
 export default function BoardSizeButton({value, currentSize, handleClick}: Props) {
     return (
-        <button 
+        <button
             className={currentSize === value ? 'selected' : ''} 
             onClick={() => handleClick(value)}
         >{getName(value)}</button>

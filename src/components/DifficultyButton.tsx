@@ -8,7 +8,7 @@ interface Props {
 
 export default function DifficultyButton({value, currentDifficulty, handleClick}: Props) {
     return (
-        <button 
+        <button
             className={currentDifficulty === value ? 'selected' : ''} 
             onClick={() => handleClick(value)}
         >{getName(value)}</button>
